@@ -22,6 +22,7 @@ def scraper(board, fileName, numOfPages=1, whichPage=2, data_format='csv'):
 	if (soup.title.text.find('Service Temporarily') > -1):
 		print '\nService busy...'
 		time.sleep(1)
+	# Start scraping
 	else:
 		print '\nStart scraping...\n'
 		# scraping start from given page 'whichPage'
@@ -65,7 +66,7 @@ def scraper(board, fileName, numOfPages=1, whichPage=2, data_format='csv'):
 			time.sleep(0.1)
 		
 		print 'Done scraping.\n'
-		dataStore(data, fileName, format=data_format)
+		return data
 
 
 def enterAgeCheck(response, url):
@@ -145,6 +146,7 @@ def linkParser(url):
 
 
 def dataStore(data, fileName, format='csv'):
+	print 'Saving data...'
 	if format=='csv':
 		pd.DataFrame(data).to_csv(fileName+'.csv', index=False)
 	elif format=='json':
@@ -167,7 +169,8 @@ if __name__ == "__main__":
 	
 	fileName = pttName+'_raw'+datetime.now().strftime('%Y%m%d')
 	t0 = time.time()
-	scraper(board=pttName, numOfPages=numOfPages, whichPage=whichPage, fileName=fileName)
+	data = scraper(board=pttName, numOfPages=numOfPages, whichPage=whichPage, fileName=fileName)
+	dataStore(data, fileName, format=data_format)
 	print 'Scraping with elapsed time', time.time()-t0, 'seconds.'
 
 
