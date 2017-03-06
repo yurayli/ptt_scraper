@@ -11,8 +11,11 @@ import pandas as pd
 
 
 def scraper(board, fileName, numOfPages=1, whichPage=2, data_format='csv'):
-	resp = requests.get('https://www.ptt.cc/bbs/'+board+'/index.html')
-	resp = enterAgeCheck(resp, board)
+	url = '/bbs/' + board + '/index.html'
+	resp = requests.get('https://www.ptt.cc' + url)
+	if resp.url.find('over18') > -1:
+		print "The board '%s' is admitted for over 18 only." %board
+	resp = enterAgeCheck(resp, url)
 	soup = BeautifulSoup(resp.text, 'lxml')
 	
 	# 如網頁忙線中，隔一秒再連接
@@ -27,6 +30,7 @@ def scraper(board, fileName, numOfPages=1, whichPage=2, data_format='csv'):
 				pageUp = soup.select('.btn-group-paging')[0].findAll('a')[1]
 				url = pageUp.attrs['href']
 				resp = requests.get('https://www.ptt.cc' + url)
+				resp = enterAgeCheck(resp, url)
 				soup = BeautifulSoup(resp.text, 'lxml')
 			except Exception as e:
 				print e + 'Less pages than given number in %s' %board
@@ -52,6 +56,7 @@ def scraper(board, fileName, numOfPages=1, whichPage=2, data_format='csv'):
 				pageUp = soup.select('.btn-group-paging')[0].findAll('a')[1]
 				url = pageUp.attrs['href']
 				resp = requests.get('https://www.ptt.cc' + url)
+				resp = enterAgeCheck(resp, url)
 				soup = BeautifulSoup(resp.text, 'lxml')
 			except:
 				print 'Cannot scrape next page. May be the final page.'
@@ -63,12 +68,11 @@ def scraper(board, fileName, numOfPages=1, whichPage=2, data_format='csv'):
 		dataStore(data, fileName, format=data_format)
 
 
-def enterAgeCheck(response, board):
+def enterAgeCheck(response, url):
 	# 檢查網址是否包含'over18'字串 ,如有則為18禁網站
 	if response.url.find('over18') > -1:
-		print 'The board is admitted for over 18 only.'
 		data_to_load = {
-			'from': '/bbs/' + board + '/index.html',
+			'from': url,
             'yes': 'yes'
 		}
 		response = requests.post(response.url.split('?')[0], data=data_to_load)
@@ -90,6 +94,7 @@ def metaCheck(soup, class_tag, data_name, index, link):
 def linkParser(url):
 	## Parsing data items from given link
 	resp = requests.get('https://www.ptt.cc'+url)
+	resp = enterAgeCheck(resp, url)
 	soup = BeautifulSoup(resp.text, 'lxml')
 	#children = [c for c in soup.select('#main-content')[0].children]
 	mainContent = soup.select('#main-content')[0]
