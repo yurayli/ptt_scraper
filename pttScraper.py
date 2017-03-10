@@ -94,9 +94,14 @@ def metaCheck(soup, class_tag, data_name, index, link):
 
 def linkParser(url):
 	## Parsing data items from given link
-	resp = requests.get('https://www.ptt.cc'+url)
-	resp = enterAgeCheck(resp, url)
-	soup = BeautifulSoup(resp.text, 'lxml')
+	try:
+		resp = requests.get('https://www.ptt.cc'+url)
+		resp = enterAgeCheck(resp, url)
+		soup = BeautifulSoup(resp.text, 'lxml')
+	# requests.exceptions
+	except Exception as e:
+		print 'Request error message:', e
+		return None
 	#children = [c for c in soup.select('#main-content')[0].children]
 	mainContent = soup.select('#main-content')[0]
 	
