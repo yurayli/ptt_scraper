@@ -10,21 +10,21 @@ from bs4 import BeautifulSoup
 import pandas as pd
 
 
-def scraper(board, fileName, numOfPages=1, whichPage=2, data_format='csv'):
+def scraper(board, fileName, numOfPages=1, whichPage=2):
 	url = '/bbs/' + board + '/index.html'
 	resp = requests.get('https://www.ptt.cc' + url)
 	if resp.url.find('over18') > -1:
-		print "The board '%s' is admitted for over 18 only." %board
+		print "\nThe board '%s' is admitted for over 18 only." %board
 	resp = enterAgeCheck(resp, url)
 	soup = BeautifulSoup(resp.text, 'lxml')
 	
 	# 如網頁忙線中，隔一秒再連接
 	if (soup.title.text.find('Service Temporarily') > -1):
-		print '\nService busy...'
+		print '\nService busy...\n'
 		time.sleep(1)
 	# Start scraping
 	else:
-		print '\nStart scraping...\n'
+		print 'Start scraping...\n'
 		# scraping start from given page 'whichPage'
 		for page in xrange(whichPage-1):
 			try:
@@ -103,7 +103,11 @@ def linkParser(url):
 		print 'Request error message:', e
 		return None
 	#children = [c for c in soup.select('#main-content')[0].children]
-	mainContent = soup.select('#main-content')[0]
+	try:
+		mainContent = soup.select('#main-content')[0]
+	except:
+		print 'Error in %s with no contents.' %url
+		return None
 	
 	# Author
 	author = metaCheck(mainContent, '.article-meta-value', 'author', 0, url).encode('utf-8')
@@ -175,7 +179,7 @@ if __name__ == "__main__":
 	fileName = pttName+'_raw'+datetime.now().strftime('%Y%m%d')
 	t0 = time.time()
 	data = scraper(board=pttName, numOfPages=numOfPages, whichPage=whichPage, fileName=fileName)
-	dataStore(data, fileName, format=data_format)
+	dataStore(data, fileName)
 	print 'Scraping with elapsed time', time.time()-t0, 'seconds.'
 
 
