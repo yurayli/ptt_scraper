@@ -18,7 +18,7 @@ def scraper(board, fileName, numOfPages=1, whichPage=2):
 	resp = enterAgeCheck(resp, url)
 	soup = BeautifulSoup(resp.text, 'lxml')
 	
-	# 如網頁忙線中，隔一秒再連接
+	# Wait for a second if busy
 	if (soup.title.text.find('Service Temporarily') > -1):
 		print '\nService busy...\n'
 		time.sleep(1)
@@ -70,7 +70,7 @@ def scraper(board, fileName, numOfPages=1, whichPage=2):
 
 
 def enterAgeCheck(response, url):
-	# 檢查網址是否包含'over18'字串 ,如有則為18禁網站
+	# check 'over18' string within the URL
 	if response.url.find('over18') > -1:
 		data_to_load = {
 			'from': url,
@@ -83,7 +83,7 @@ def enterAgeCheck(response, url):
 
 
 def metaCheck(soup, class_tag, data_name, index, link):
-    # 標題列可能被使用者自行刪除
+    # check if meta data (topic, id, etc) is there
     try:
         data = soup.select(class_tag)[index].text
     except:
